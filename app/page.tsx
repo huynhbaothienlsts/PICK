@@ -45,7 +45,7 @@ export default function Home() {
   const [toast, setToast] = useState("");
 
   useEffect(() => {
-    const script = document.createElement("script"); script.src = "/lucide.min.js"; script.onload = () => window.lucide?.createIcons(); document.body.appendChild(script);
+    const script = document.createElement("script"); script.src = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/lucide.min.js`; script.onload = () => window.lucide?.createIcons(); document.body.appendChild(script);
     return () => script.remove();
   }, []);
   useEffect(() => { setTimeout(() => window.lucide?.createIcons(), 0); }, [mode, page, selectedDate, selectedTime, search, level]);
