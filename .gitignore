@@ -3,6 +3,11 @@
 # dependencies
 /node_modules
 /.node_modules_broken/
+/.docx-review/
+~$*.docx
+/PICK revise.docx
+/pick mascot.png
+/pick mascot 2.png
 /.pnpm-store/
 /.pnp
 .pnp.*

@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 declare global { interface Window { lucide?: { createIcons: () => void } } }
 
 type Mode = "free" | "membership";
-type Page = "home" | "partner" | "coaching" | "events" | "booking" | "progress" | "membership";
+type Page = "home" | "partner" | "coaching" | "events" | "booking" | "progress" | "membership" | "profile";
 
 const nav = [
   ["home", "home", "Home"], ["partner", "users", "Partner"], ["coaching", "graduation-cap", "Coaching"],
@@ -51,7 +51,7 @@ export default function Home() {
   useEffect(() => { setTimeout(() => window.lucide?.createIcons(), 0); }, [mode, page, selectedDate, selectedTime, search, level]);
   useEffect(() => { if (!toast) return; const id = setTimeout(() => setToast(""), 2200); return () => clearTimeout(id); }, [toast]);
 
-  const title = useMemo(() => ({ home: "", partner: mode === "free" ? "Find a Partner" : "Match Suggestions", coaching: mode === "free" ? "Find a Coach" : "Coach Calendar", events: "Games & Events", booking: "Book a Court", progress: "My Progress", membership: "PICK! Membership" }[page]), [page, mode]);
+  const title = useMemo(() => ({ home: "", partner: mode === "free" ? "Find a Partner" : "Match Suggestions", coaching: mode === "free" ? "Find a Coach" : "Coach Calendar", events: "Games & Events", booking: "Book a Court", progress: "My Progress", membership: "PICK! Membership", profile: "Player Profile" }[page]), [page, mode]);
   const go = (p: Page) => { setPage(p); window.scrollTo({ top: 0, behavior: "smooth" }); };
   const act = (message: string) => setToast(message);
 
@@ -62,7 +62,7 @@ export default function Home() {
           <Icon name={mode === "free" ? "crown" : "house"} size={15} /> {mode === "free" ? "Membership" : "Free App"}
         </button>
         <button className="brand" onClick={() => go("home")}><span>PICK!</span><small>SOCIAL</small></button>
-        <button className="avatar" aria-label="Open profile">TH</button>
+        <button className="avatar" aria-label="Open profile" onClick={() => go("profile")}>TH</button>
       </header>
 
       {page !== "home" && <div className="page-head"><button onClick={() => go("home")} aria-label="Back home"><Icon name="arrow-left" /></button><div><small>{mode === "membership" ? "MEMBER EXPERIENCE" : "FREE EXPERIENCE"}</small><h1>{title}</h1></div><span /></div>}
@@ -75,6 +75,7 @@ export default function Home() {
         {page === "booking" && <BookingPage mode={mode} selectedDate={selectedDate} setSelectedDate={setSelectedDate} selectedTime={selectedTime} setSelectedTime={setSelectedTime} act={act} />}
         {page === "progress" && <ProgressPage mode={mode} act={act} />}
         {page === "membership" && <MembershipPage mode={mode} go={go} act={act} />}
+        {page === "profile" && <ProfilePage mode={mode} go={go} act={act} />}
       </div>
 
       <nav className="bottom-nav" aria-label="Main navigation">{nav.map(([p, icon, label]) => <button key={p} className={page === p ? "active" : ""} onClick={() => go(p)}><Icon name={icon} size={21} /><span>{label}</span></button>)}</nav>
@@ -86,20 +87,22 @@ export default function Home() {
 function HomePage({ mode, go, act }: { mode: Mode; go: (p: Page) => void; act: (s: string) => void }) {
   const member = mode === "membership";
   return <>
-    <section className={`hero ${member ? "member" : ""}`}>
-      <div className="hero-ball" /><div className="hero-copy">{member && <div className="active-badge"><Icon name="badge-check" size={14} /> MEMBERSHIP ACTIVE</div>}<p>Good afternoon, Thien</p><h1>{member ? "Your game, elevated." : "Play. Connect. Grow."}</h1><span>{member ? "Your smartest next match starts here." : "Find your people. Get on court. Keep improving."}</span></div>
-      <div className="hero-stat"><b>{member ? "4" : "2"}</b><small>games<br />this week</small></div>
+    <section className={`hero mascot-hero ${member ? "member" : ""}`}>
+      <div className="hero-copy">{member && <div className="active-badge"><Icon name="badge-check" size={14} /> MEMBERSHIP ACTIVE</div>}<p>Good afternoon, Thien</p><h1>Play. Connect. Grow.</h1><span>Your game. Your people. Your community.</span><button className="hero-cta" onClick={() => go("events")}><Icon name="circle-play" size={16} /> Find a Game</button></div>
+      <img className="hero-mascot" src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/${member ? "pick-mascot-paddle.png" : "pick-mascot.png"}`} alt="PICK! mint mascot" />
     </section>
+    <div className="player-snapshot"><button className="snapshot-person" onClick={() => go("profile")}><span>TH</span><div><b>Thien Huynh</b><small>Intermediate · Ho Chi Minh City</small></div></button><div><b>{member ? "4" : "2"}</b><small>games this week</small></div><div><b>66.7%</b><small>win rate</small></div></div>
     <SectionTitle eyebrow="QUICK START" title={member ? "Member shortcuts" : "What do you want to do?"} />
     <div className="action-grid">
-      <AppCard icon="users" title={member ? "Match Suggestions" : "Find a Partner"} text={member ? "3 great matches" : "38 players nearby"} onClick={() => go("partner")} accent={member} />
+      <AppCard icon="user-search" title="Find Players" text="38 players nearby" onClick={() => go("partner")} />
+      <AppCard icon="users" title={member ? "Match Suggestions" : "Find a Partner"} text={member ? "3 great matches" : "Connect by availability"} onClick={() => go("partner")} accent={member} />
       <AppCard icon="graduation-cap" title={member ? "Coach Calendar" : "Find a Coach"} text={member ? "Next: Thu, 5 PM" : "Book a lesson"} onClick={() => go("coaching")} />
       <AppCard icon="calendar-check" title="Book a Court" text={member ? "Member benefits apply" : "See open slots"} onClick={() => go("booking")} />
-      <AppCard icon={member ? "sparkles" : "trophy"} title={member ? "PICK! AI Coach" : "Track Progress"} text={member ? "New insight ready" : "Record a result"} onClick={() => go("progress")} />
     </div>
-    <SectionTitle eyebrow="COMING UP" title={member ? "Picked for you" : "Games & events"} action="See all" />
+    <SectionTitle eyebrow="COMING UP" title={member ? "Organised games for you" : "Upcoming Games & Events"} action="See all" />
     <button className="event-feature" onClick={() => go("events")}><div className="date-block"><b>{member ? "28" : "29"}</b><span>NOV</span></div><div><span className="tag">{member ? "MEMBER EXCLUSIVE" : "UNIVERSITY CLUB"}</span><h3>{member ? "DUPR 4.0+ Evening Rally" : "Social Rally Night"}</h3><p><Icon name="map-pin" size={14} /> PICK! Thao Dien · {member ? "7:00 PM" : "8:30 PM"}</p></div><Icon name="chevron-right" /></button>
-    {member ? <div className="ai-preview"><span><Icon name="sparkles" size={19} /></span><div><b>PICK! AI Coach</b><p>“Your rally consistency is trending up.”</p></div><button onClick={() => go("progress")}>View</button></div> : <button className="membership-banner" onClick={() => go("membership")}><div><span>GO FURTHER WITH PICK!</span><h3>Meet your best match, faster.</h3><p>Unlock matching, AI coaching & more.</p></div><div className="crown"><Icon name="crown" /></div></button>}
+    <section className="community-photo"><img src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/pickleball-community.jpg`} alt="Friends playing pickleball together" /><div><span>COMMUNITY IN MOTION</span><h3>Weekly games. Local groups. Real connections.</h3><p>Join 128 players across university clubs and neighbourhood groups.</p><button onClick={() => go("events")}>Explore community <Icon name="arrow-right" size={14} /></button></div></section>
+    {member ? <div className="ai-preview"><span><Icon name="sparkles" size={19} /></span><div><b>PICK! AI Coach</b><p>“Your rally consistency is trending up.”</p></div><button onClick={() => go("progress")}>View</button></div> : <button className="membership-banner membership-price" onClick={() => go("membership")}><div><span>PICK! SOCIAL MEMBERSHIP</span><h3>Grow your game with your community.</h3><p><b>VND 399,000/month</b> · Matching, events, benefits & AI Coach</p><em>Upgrade membership</em></div><img src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/pick-mascot-paddle.png`} alt="PICK! mascot holding a paddle" /></button>}
   </>;
 }
 
@@ -147,7 +150,7 @@ function EventsPage({ mode, act }: { mode: Mode; act: (s: string) => void }) {
     ["05", "PICK! Sponsor Cup", "Free eligible entry · Limited slots", "FREE MEMBER ENTRY"],
     ["12", "Beginner League", "Member league discount applies", "MEMBER SAVING"],
   ] : [["29", "University Club Session", "Off-peak social play · All levels", "UNIVERSITY CLUB"], ["06", "Thao Dien Open", "Early tournament alert", "EARLY ALERT"], ["14", "Sunday Social Mixer", "Friendly play · Open entry", "SOCIAL"]];
-  return <><div className="tab-switch"><button className="active">Upcoming</button><button>Past</button></div>{mode === "membership" && <div className="info-strip"><Icon name="crown" /><div><b>Member priority is on</b><p>Exclusive sessions and eligible free entries appear first.</p></div></div>}<div className="event-list">{events.map((e, i) => <article key={e[1]}><div className="event-date"><b>{e[0]}</b><span>{i ? "DEC" : "NOV"}</span></div><div><span className="tag">{e[3]}</span><h3>{e[1]}</h3><p>{e[2]}</p><small><Icon name="map-pin" size={13} /> PICK! Thao Dien</small></div><button onClick={() => act(`Viewing ${e[1]}`)}><Icon name="chevron-right" /></button></article>)}</div><button className="secondary wide">View all events</button></>;
+  return <><div className="tab-switch"><button className="active">Upcoming</button><button>Past</button></div>{mode === "membership" && <div className="info-strip"><Icon name="crown" /><div><b>Member priority is on</b><p>Exclusive sessions and eligible free entries appear first.</p></div></div>}<div className="event-list">{events.map((e, i) => <article key={e[1]}><div className="event-date"><b>{e[0]}</b><span>{i ? "DEC" : "NOV"}</span></div><div><span className="tag">{e[3]}</span><h3>{e[1]}</h3><p>{e[2]}</p><small><Icon name="map-pin" size={13} /> PICK! Thao Dien</small></div><button aria-label={`Register for ${e[1]}`} onClick={() => act(`Registered for ${e[1]}`)}><Icon name="circle-plus" /></button></article>)}</div><SectionTitle eyebrow="ORGANISED GAMES" title="Find your next court crew" /><div className="organised-game"><div className="game-photo"><img src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/pick-mascot-paddle.png`} alt="PICK! mascot ready to play" /></div><div><span>{mode === "membership" ? "94% MATCH · MEMBER PICK" : "OPEN GAME"}</span><h3>Thursday After-Work Rally</h3><p><Icon name="users" size={14} /> 6/8 players · Intermediate</p><p><Icon name="clock-3" size={14} /> Thu 6:30 PM · Thao Dien</p><div className="player-dots"><i>MA</i><i>QH</i><i>LC</i><b>+3</b></div></div><button className="primary" onClick={() => act("You joined Thursday After-Work Rally")}>Join</button></div><SectionTitle eyebrow="COMMUNITY" title="This week at PICK!" /><div className="community-grid"><button onClick={() => act("Weekly challenge joined")}><Icon name="target" /><b>Rally 50</b><span>Weekly challenge · 68 joined</span></button><button onClick={() => act("Leaderboard opened")}><Icon name="trophy" /><b>Club leaderboard</b><span>You are #12 this week</span></button></div><button className="secondary wide" onClick={() => act("All community events loaded")}>View all events</button></>;
 }
 
 function BookingPage({ mode, selectedDate, setSelectedDate, selectedTime, setSelectedTime, act }: { mode: Mode; selectedDate: number; setSelectedDate: (n: number) => void; selectedTime: string; setSelectedTime: (s: string) => void; act: (s: string) => void }) {
@@ -157,6 +160,10 @@ function BookingPage({ mode, selectedDate, setSelectedDate, selectedTime, setSel
 function ProgressPage({ mode, act }: { mode: Mode; act: (s: string) => void }) {
   return <>{mode === "free" ? <><div className="score-hero"><div><small>GAMES PLAYED</small><b>12</b><span>+3 this week</span></div><div className="ring"><b>67%</b><span>win rate</span></div></div><div className="stats-row"><div><Icon name="trophy" /><b>8</b><span>Wins</span></div><div><Icon name="activity" /><b>3</b><span>This week</span></div><div><Icon name="flame" /><b>2</b><span>Win streak</span></div></div><button className="primary wide tall" onClick={() => act("Ready to record a new match")}>+ Record Match Result</button><SectionTitle eyebrow="RECENT HISTORY" title="Your matches" /><div className="match-row"><span className="win">W</span><div><b>vs. Minh Anh</b><small>21–16, 21–18 · Nov 24</small></div><Icon name="chevron-right" /></div><div className="match-row"><span className="loss">L</span><div><b>vs. Quang Huy</b><small>18–21, 19–21 · Nov 21</small></div><Icon name="chevron-right" /></div></> : <><div className="ai-hero"><div className="ai-orb"><Icon name="sparkles" /></div><div><span>PICK! AI COACH</span><h2>Your game, decoded.</h2><p>AI-assisted progress and guidance after every match.</p></div><small>SIMULATED DEMO OUTPUT</small></div><div className="summary-label">POST-MATCH SUMMARY · SAMPLE</div><div className="record-card"><div><b>8W <span>–</span> 4L</b><p>Your last 12 recorded matches.</p></div><div className="ring mini"><b>66.7%</b><span>win rate</span></div></div><div className="ai-flow"><div className="flow-card data"><span><Icon name="chart-no-axes-combined" /> 1 · PERFORMANCE DATA</span><div className="mini-stats"><p><b>66.7%</b>Win rate</p><p><b>12</b>Matches played</p><p><b>3</b>Weekly activity</p></div></div><div className="connector" /><div className="flow-card reflect"><span><Icon name="message-circle" /> 2 · PLAYER REFLECTION</span><blockquote>“I struggled to maintain consistency during longer rallies.”</blockquote></div><div className="connector" /><div className="flow-card insight"><span><Icon name="sparkles" /> 3 · AI-GENERATED INSIGHT</span><p>Your reflection suggests that consistency during extended rallies is an area you would like to improve.</p><small>SIMULATED — NOT REAL AI ANALYSIS</small></div><div className="connector" /><div className="flow-card next"><span><Icon name="target" /> 4 · SUGGESTED NEXT STEPS</span><ul><li>Set a goal to maintain more consistent rallies.</li><li>Focus on controlled shot placement during your next practice.</li><li>Review your progress after three matches.</li></ul></div></div><button className="primary wide tall" onClick={() => act("Practice goal added to your plan")}>Add to My Practice Plan</button></>}
   </>;
+}
+
+function ProfilePage({ mode, go, act }: { mode: Mode; go: (p: Page) => void; act: (s: string) => void }) {
+  return <><section className="profile-hero"><div className="profile-avatar">TH</div><div><span>{mode === "membership" ? "PICK! MEMBER" : "FREE PLAYER"}</span><h2>Thien Huynh</h2><p><Icon name="map-pin" size={14} /> Ho Chi Minh City</p></div><button onClick={() => act("Profile editing opened")}><Icon name="pencil" size={16} /></button></section><div className="profile-tags"><span>Intermediate</span><span>Balanced player</span><span>Evening games</span></div><div className="profile-stats"><div><b>12</b><span>Matches</span></div><div><b>66.7%</b><span>Win rate</span></div><div><b>3</b><span>Groups</span></div></div><SectionTitle eyebrow="PLAYING STYLE" title="How you play" /><div className="style-card"><div><Icon name="zap" /><span><b>Quick at the kitchen</b><small>Prefers controlled placement and fast exchanges.</small></span></div><div><Icon name="clock-3" /><span><b>Best availability</b><small>Tuesday & Thursday · 6–8 PM</small></span></div></div><SectionTitle eyebrow="MY COMMUNITY" title="Groups & achievements" /><div className="group-row"><span>US</span><div><b>University Social Club</b><small>42 players · Weekly games</small></div><Icon name="chevron-right" /></div><div className="badge-row"><div><Icon name="flame" /><b>3-Week Streak</b></div><div><Icon name="handshake" /><b>Community Builder</b></div><div><Icon name="trophy" /><b>Rally 50</b></div></div><button className="primary wide tall" onClick={() => go(mode === "membership" ? "progress" : "membership")}>{mode === "membership" ? "View My Progress" : "Explore Membership"}</button></>;
 }
 
 function MembershipPage({ mode, go, act }: { mode: Mode; go: (p: Page) => void; act: (s: string) => void }) {
